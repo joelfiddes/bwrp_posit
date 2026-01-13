@@ -258,6 +258,68 @@ ui <- navbarPage(
           fluidRow(
             column(
               10,
+              h4("Current Hydrology")
+            ),
+            column(
+              2,
+              br(),
+              actionButton(
+                "wrm_info_btn", "",
+                icon = icon("info-circle"),
+                style = "margin-top: 5px;"
+              )
+            )
+          ),
+          
+          selectInput("wrm_year", "Select Year:", choices = NULL),
+          selectInput("wrm_variable", "Select Variable:", choices = NULL),
+          radioButtons("wrm_map_view", "Map View:", 
+                       choices = c("Anomaly" = "anomaly", "Annual Mean" = "annual_mean")),
+          
+          sliderInput(
+            "wrm_alpha", "Polygon transparency:",
+            min = 0, max = 1, value = 0.8, step = 0.05
+          ),
+          
+          selectInput(
+            "wrm_basemap", "Basemap:",
+            choices = c(
+              "Light" = "CartoDB.Positron",
+              "Topographic" = "Esri.WorldTopoMap"
+            )
+          ),
+          
+          hr(),
+          
+          checkboxInput("wrm_show_rm", "Show running mean", TRUE),
+          sliderInput(
+            "wrm_rm_window", "Running mean (days)",
+            min = 0, max = 365, value = 30
+          ),
+          
+          downloadButton("wrm_download_ts", "Download time series CSV"),
+          
+          helpText("Click a catchment to view its daily time series below.")
+        ),
+        mainPanel(
+          leafletOutput("wrm_map", height = "600px"),
+          plotOutput("wrm_timeseries_plot", height = "300px")
+        )
+      )
+    )
+  ),
+  
+  # =======================
+  # TAB 3: Future Climate & Hydrology
+  # =======================
+  tabPanel("Future Climate & Hydrology",
+    fluidPage(
+      titlePanel("Baluchistan Future Climate & Hydrology"),
+      sidebarLayout(
+        sidebarPanel(
+          fluidRow(
+            column(
+              10,
               selectInput(
                 "cc_scenario", "Scenario:",
                 choices = names(cc_scenario_dirs),
@@ -330,68 +392,6 @@ ui <- navbarPage(
         mainPanel(
           leafletOutput("cc_map", height = "600px"),
           plotOutput("cc_timeseries_plot", height = "300px")
-        )
-      )
-    )
-  ),
-  
-  # =======================
-  # TAB 3: Future Climate & Hydrology
-  # =======================
-  tabPanel("Future Climate & Hydrology",
-    fluidPage(
-      titlePanel("Baluchistan Future Climate & Hydrology"),
-      sidebarLayout(
-        sidebarPanel(
-          fluidRow(
-            column(
-              10,
-              h4("Current Hydrology")
-            ),
-            column(
-              2,
-              br(),
-              actionButton(
-                "wrm_info_btn", "",
-                icon = icon("info-circle"),
-                style = "margin-top: 5px;"
-              )
-            )
-          ),
-          
-          selectInput("wrm_year", "Select Year:", choices = NULL),
-          selectInput("wrm_variable", "Select Variable:", choices = NULL),
-          radioButtons("wrm_map_view", "Map View:", 
-                       choices = c("Anomaly" = "anomaly", "Annual Mean" = "annual_mean")),
-          
-          sliderInput(
-            "wrm_alpha", "Polygon transparency:",
-            min = 0, max = 1, value = 0.8, step = 0.05
-          ),
-          
-          selectInput(
-            "wrm_basemap", "Basemap:",
-            choices = c(
-              "Light" = "CartoDB.Positron",
-              "Topographic" = "Esri.WorldTopoMap"
-            )
-          ),
-          
-          hr(),
-          
-          checkboxInput("wrm_show_rm", "Show running mean", TRUE),
-          sliderInput(
-            "wrm_rm_window", "Running mean (days)",
-            min = 0, max = 365, value = 30
-          ),
-          
-          downloadButton("wrm_download_ts", "Download time series CSV"),
-          
-          helpText("Click a catchment to view its daily time series below.")
-        ),
-        mainPanel(
-          leafletOutput("wrm_map", height = "600px"),
-          plotOutput("wrm_timeseries_plot", height = "300px")
         )
       )
     )

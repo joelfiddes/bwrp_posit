@@ -44,10 +44,10 @@ cf_var_dict <- tibble::tribble(
   "RH",                      "Relative Humidity",                   "%",             "Humidity & Wind",     10,     100,   "viridis",
   "wind_ms",                 "Wind Speed",                          "m/s",           "Humidity & Wind",     0,      10,    "viridis",
   
-  "PET_mm_hr_penman",        "Penman PET",                          "mm/day",        "Evaporation",         0,      0.5,   "viridis",
-  "PET_mm_hr_priestly",      "Priestly-Taylor PET",                 "mm/day",        "Evaporation",         0,      0.5,   "viridis",
-  "PET_mm_annual_penman",    "Annual PET (Penman)",                 "mm/year",       "Evaporation",         0,      3000,  "viridis",
-  "PET_mm_annual_priestly",  "Annual PET (Priestly-Taylor)",        "mm/year",       "Evaporation",         0,      3000,  "viridis"
+  "PET_mm_hr_penman",        "Penman PET",                          "mm/day",        "Evaporation",         0,      0.25,   "viridis",
+  "PET_mm_hr_priestly",      "Priestly-Taylor PET",                 "mm/day",        "Evaporation",         0,      0.25,   "viridis",
+  "PET_mm_annual_penman",    "Annual PET (Penman)",                 "mm/year",       "Evaporation",         1000,      2300,  "viridis",
+  "PET_mm_annual_priestly",  "Annual PET (Priestly-Taylor)",        "mm/year",       "Evaporation",         1000,      2000,  "viridis"
 )
 
 cf_var_dict$group <- factor(cf_var_dict$group, levels = cf_group_order)
@@ -94,18 +94,18 @@ cc_var_dict <- tibble::tribble(
   "SWin",                   "Incoming shortwave radiation", "W m⁻²",       "Radiation",        0,      350,  "viridis",
   "SWnet",                  "Net shortwave radiation",      "W m⁻²",       "Radiation",       -50,    250,  "viridis",
   "Rnet_Wm2",               "Net radiation",                "W m⁻²",       "Radiation",      -150,    300,  "viridis",
-  "Msnow",                  "Snowmelt",                     "mm/day",      "Hydrology",       0,       20,  "viridis",
+  "Msnow",                  "Snowmelt",                     "mm/day",      "Hydrology",       0,       0.2,  "viridis",
   "Total",                  "Total runoff",                 "mm/day",      "Hydrology",       0,      2,  "viridis",
-  "Rech",                   "Recharge",                     "mm/day",      "Hydrology",       0,       50,  "viridis",
-  "Eac",                    "Actual evapotranspiration",    "mm/day",      "Hydrology",       0,       50,  "viridis",
-  "SM",                     "Soil moisture",                "mm",          "Hydrology",       0,      300,  "viridis",
-  "q_sim",                  "Simulated discharge",          "m³/s",        "Hydrology",       0,     2,  "viridis",
-  "WB",                     "Water balance",                "mm/day",      "Hydrology",      -50,      1,  "viridis",
+  "Rech",                   "Recharge",                     "mm/day",      "Hydrology",       0,       0.5,  "viridis",
+  "Eac",                    "Actual evapotranspiration",    "mm/day",      "Hydrology",       0,       2,  "viridis",
+  "SM",                     "Soil moisture",                "mm",          "Hydrology",       0,      10,  "viridis",
+  "q_sim",                  "Simulated discharge",          "m³/s",        "Hydrology",       0,     0.3,  "viridis",
+  "WB",                     "Water balance",                "mm/day",      "Hydrology",      -0.5,      0.5,  "viridis",
   "annual_water_budget_mm", "Annual water budget",         "mm/year",     "Hydrology",      -500,   500,  "viridis",
-  "SWE",                    "Snow water equivalent",        "mm",          "Hydrology",            0,      1000, "viridis",
-  "STZ",                    "Surface top zone",             "mm",          "Hydrology",            0,      200,  "viridis",
-  "SUZ",                    "Subsurface upper zone",        "mm",          "Hydrology",            0,      500,  "viridis",
-  "SLZ",                    "Subsurface lower zone",        "mm",          "Hydrology",            0,     1000,  "viridis",
+  "SWE",                    "Snow water equivalent",        "mm",          "Hydrology",            0,      5, "viridis",
+  "STZ",                    "Surface top zone",             "mm",          "Hydrology",            0,      0.5,  "viridis",
+  "SUZ",                    "Subsurface upper zone",        "mm",          "Hydrology",            0,      0.7,  "viridis",
+  "SLZ",                    "Subsurface lower zone",        "mm",          "Hydrology",            0,     1,  "viridis",
   "RH",                     "Relative humidity",            "%",           "Humidity",        10,     100,  "viridis",
   "wind_ms",                "Wind speed",                   "m/s",         "Wind",             0,      10,  "viridis",
   "PET_mm_hr_penman",       "PET Penman",                   "mm/day",      "Evaporation",     0,       0.5,  "viridis",

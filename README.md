@@ -91,3 +91,169 @@ rsconnect::writeManifest()
 ## License
 
 GNU General Public License v3.0
+
+
+
+# Hydrological Modelling Workflow – Balochistan Water Resources Programme
+
+This repository implements an end-to-end hydrological modelling system designed to assess historical and future water availability in the arid and data-scarce catchments of Balochistan. The workflow integrates terrain-aware climate downscaling, snow and evapotranspiration modelling, and lumped hydrological simulation to produce catchment-scale runoff and water balance outputs.
+
+The system supports **both historical analysis and CMIP6-based future climate scenarios**, using a consistent and reproducible modelling chain.
+
+---
+
+## 1. Climate Data Inputs
+
+### Historical Climate (Baseline)
+- **ERA5 reanalysis** provides historical meteorological forcing:
+  - Precipitation
+  - Air temperature
+  - Radiation
+  - Wind and humidity
+
+ERA5 is used as:
+- The historical reference climate
+- The basis for bias adjustment and statistical relationships applied to future climate projections
+
+### Future Climate Projections
+- **CMIP6 global climate model outputs**
+- Multiple models and scenarios (e.g. SSP pathways)
+- Variables include precipitation and temperature
+
+---
+
+## 2. Terrain Representation (TopoSUB)
+
+To efficiently represent Balochistan’s complex terrain, the landscape is simplified using **TopoSUB** topographic clustering.
+
+- Clusters are based on:
+  - Elevation
+  - Slope
+  - Aspect
+  - Sky-view factor
+- Each cluster represents areas with similar terrain-driven climate behaviour
+
+The same clusters are used consistently for historical and future simulations.
+
+---
+
+## 3. Climate Downscaling
+
+### 3.1 Historical Downscaling (TopoPyScale)
+
+Historical ERA5 data are dynamically downscaled to high spatial resolution (~90 m) using **TopoPyScale**.
+
+This step accounts for:
+- Elevation gradients
+- Terrain exposure and shading
+- Orographic effects
+
+**Output:**  
+Terrain-corrected historical climate forcing fields used for hydrological modelling and as a reference for future projections.
+
+---
+
+### 3.2 Future Climate Downscaling (TopoCLIM)
+
+Future CMIP6 projections are downscaled using **TopoCLIM**, a terrain-aware statistical downscaling framework.
+
+TopoCLIM:
+- Learns statistical relationships from:
+  - ERA5 baseline climate
+  - TopoPyScale downscaled reference data
+  - TopoSUB terrain clusters
+- Applies bias adjustment relative to the historical baseline
+- Preserves local topographic controls on climate
+
+**Output:**  
+High-resolution, downscaled CMIP6 climate time series consistent with the historical forcing.
+
+---
+
+## 4. Snow and Surface Energy Modelling (FSM)
+
+Where relevant (higher elevations), the **Flexible Snow Model (FSM)** is applied using downscaled climate forcing to simulate:
+
+- Snow accumulation and melt
+- Snow water equivalent (SWE)
+- Snow height
+- Surface energy fluxes
+
+FSM ensures physically consistent treatment of seasonal snow processes.
+
+---
+
+## 5. Potential Evapotranspiration (PET)
+
+Potential evapotranspiration (PET) is computed using physically based methods:
+
+- Penman
+- Priestley–Taylor
+
+PET represents atmospheric water demand, a dominant control on hydrology in arid environments.
+
+---
+
+## 6. Catchment-Level Aggregation
+
+High-resolution climate, snow, and PET outputs are aggregated to the **catchment scale**:
+
+- Catchments defined using **HydroSHEDS basin boundaries**
+- Topographic clusters are area-weighted within each catchment
+
+**Result:**  
+A single, representative forcing time series per catchment.
+
+---
+
+## 7. Hydrological Modelling (HBV)
+
+Each catchment is simulated using a **lumped HBV hydrological model**, adapted for dry and arid regions.
+
+The model represents:
+- Soil moisture storage and evapotranspiration losses
+- Event-driven runoff and flash flooding
+- Limited groundwater recharge and zero-flow periods
+
+The HBV model is calibrated under historical conditions and then applied unchanged to future climate scenarios.
+
+---
+
+## 8. Historical and Future Simulations
+
+The same modelling chain is applied to:
+
+- **Historical baseline climate**
+- **Future CMIP6 climate scenarios**
+
+This ensures full methodological consistency when comparing past, present, and future hydrological conditions.
+
+---
+
+## 9. Climate and Hydrological Analysis
+
+For each catchment and scenario, the system computes:
+
+- Precipitation, temperature, PET, and runoff statistics
+- Water balance indicators (P − ET)
+- Annual and seasonal anomalies
+- Long-term trends and variability
+
+---
+
+## 10. Visualisation and Access
+
+Model outputs are delivered through:
+
+- Interactive dashboards (R Shiny)
+- Climate Explorer and Water Resources Atlas
+- Google Earth Engine spatial analyses
+
+These tools enable exploration of basin-scale climate and hydrological change under future scenarios.
+
+---
+
+## Model Workflow (Summary Box)
+
+### Historical Climate
+

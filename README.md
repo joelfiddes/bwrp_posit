@@ -27,7 +27,8 @@ This is a unified dashboard combining all three BWRP Shiny applications into a s
 - [8. Historical and Future Simulations](#8-historical-and-future-simulations)
 - [9. Climate and Hydrological Analysis](#9-climate-and-hydrological-analysis)
 - [10. Visualisation and Access](#10-visualisation-and-access)
-- [Model Workflow (Summary Box)](#model-workflow-summary-box)
+- [Key Design Principles](#key-design-principles)
+- [Model Workflow Diagram](#model-workflow-diagram)
 
 ---
 
@@ -278,9 +279,52 @@ Model outputs are delivered through:
 
 These tools enable exploration of basin-scale climate and hydrological change under future scenarios.
 
+
 ---
 
-## Model Workflow (Summary Box)
+## Key Design Principles
 
-### Historical Climate
+- Terrain-aware climate downscaling
+- Consistent methods across historical and future scenarios
+- Parsimonious hydrological modelling suited to arid regions
+- Reproducible and scalable workflow
+- Designed for data-scarce environments
 
+---
+
+
+## Model Workflow Diagram
+
+```mermaid
+flowchart TD
+    A[ERA5 Reanalysis<br/>Historical Climate] --> B[TopoSUB<br/>Terrain Clustering]
+    B --> C[TopoPyScale<br/>Dynamic Downscaling]
+    C --> D[FSM<br/>Snow & Energy Balance]
+    D --> E[PET Calculation<br/>Penman / Priestley–Taylor]
+    E --> F[Catchment Aggregation<br/>HydroSHEDS]
+    F --> G[HBV Model<br/>Calibration & Simulation]
+
+    H[CMIP6 GCMs<br/>Future Climate Scenarios] --> I[TopoCLIM<br/>Terrain-aware Statistical Downscaling]
+    I --> D
+    I --> E
+    I --> F
+    F --> J[HBV Model<br/>Future Simulations]
+
+    G --> K[Historical Climate & Hydrology Outputs]
+    J --> L[Future Climate & Hydrology Outputs]
+
+    K --> M[Trend & Anomaly Analysis]
+    L --> M
+
+    M --> N[Dashboards & Atlases<br/>R Shiny • GEE]
+
+
+### Notes
+- The **same terrain representation and hydrological model** are used for historical and future simulations.
+- This ensures **methodological consistency** when comparing baseline and CMIP6 scenarios.
+- FSM and PET are applied identically to both historical and future climate forcings.
+
+If you want, I can also:
+- Produce a **simplified version for non-technical audiences**
+- Convert this to an **SVG/PNG-style diagram**
+- Split it into **“Historical” vs “Future” swimlanes** for presentations

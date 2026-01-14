@@ -407,6 +407,13 @@ server <- function(input, output, session) {
           "Use the variable selector to explore different climate forcing ",
           "parameters across catchments."
         ),
+        p(
+          strong("Full documentation and source code available here:"),
+          br(),
+          a("https://github.com/joelfiddes/bwrp_posit", 
+            href = "https://github.com/joelfiddes/bwrp_posit",
+            target = "_blank")
+        ),
         easyClose = TRUE,
         footer = modalButton("Close")
       )
@@ -482,6 +489,13 @@ server <- function(input, output, session) {
           "Click a catchment to display daily time series. ",
           "Linear trends are estimated using ordinary least squares, ",
           "and optional running means can be applied."
+        ),
+        p(
+          strong("Full documentation and source code available here:"),
+          br(),
+          a("https://github.com/joelfiddes/bwrp_posit", 
+            href = "https://github.com/joelfiddes/bwrp_posit",
+            target = "_blank")
         ),
         easyClose = TRUE,
         footer = modalButton("Close")
@@ -676,6 +690,13 @@ server <- function(input, output, session) {
         p(
           "Click a catchment to display daily time series data. ",
           "You can toggle between anomaly and annual mean views."
+        ),
+        p(
+          strong("Full documentation and source code available here:"),
+          br(),
+          a("https://github.com/joelfiddes/bwrp_posit", 
+            href = "https://github.com/joelfiddes/bwrp_posit",
+            target = "_blank")
         ),
         easyClose = TRUE,
         footer = modalButton("Close")

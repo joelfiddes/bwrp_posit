@@ -166,9 +166,6 @@ wrm_var_dict <- tibble::tribble(
   "Eac",    "Actual Evapotranspiration",      "mm/day",  "Hydrology",       "viridis",
   "SM",     "Soil Moisture",                  "mm",      "Hydrology",       "viridis",
   "Qg",     "Groundwater Flow",               "mm/day",  "Hydrology",       "viridis",
-  "Q0",     "Runoff Q0",                      "mm/day",  "Hydrology",       "viridis",
-  "Q1",     "Runoff Q1",                      "mm/day",  "Hydrology",       "viridis",
-  "Q2",     "Runoff Q2",                      "mm/day",  "Hydrology",       "viridis",
   "WB",     "Water Balance",                  "mm/day",  "Hydrology",       "viridis",
   
   "STZ",    "Shallow Soil Zone",              "mm",      "Soil Zones",      "viridis",

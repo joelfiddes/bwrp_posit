@@ -2,6 +2,8 @@
 
 This is a unified dashboard combining all three BWRP Shiny applications into a single interface with navigation tabs.
 
+**Live Application**: https://joelfiddes-bwrp.share.connect.posit.cloud/
+
 ## Overview
 
 The BWRP Combined Dashboard integrates:

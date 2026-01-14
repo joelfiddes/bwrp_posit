@@ -317,7 +317,7 @@ flowchart TD
     L --> M
 
     M --> N[Dashboards & Atlases<br/>R Shiny • GEE]
-
+```
 
 ### Notes
 - The **same terrain representation and hydrological model** are used for historical and future simulations.

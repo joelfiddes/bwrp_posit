@@ -324,7 +324,4 @@ flowchart TD
 - This ensures **methodological consistency** when comparing baseline and CMIP6 scenarios.
 - FSM and PET are applied identically to both historical and future climate forcings.
 
-If you want, I can also:
-- Produce a **simplified version for non-technical audiences**
-- Convert this to an **SVG/PNG-style diagram**
-- Split it into **“Historical” vs “Future” swimlanes** for presentations
+

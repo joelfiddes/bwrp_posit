@@ -27,8 +27,8 @@ This is a unified dashboard combining all three BWRP Shiny applications into a s
 - [8. Historical and Future Simulations](#8-historical-and-future-simulations)
 - [9. Climate and Hydrological Analysis](#9-climate-and-hydrological-analysis)
 - [10. Visualisation and Access](#10-visualisation-and-access)
-- [11. Key Design Principles](#key-design-principles)
-- [12 .Model Workflow Diagram](#model-workflow-diagram)
+- [11. Key Design Principles](#11-key-design-principles)
+- [12 .Model Workflow Diagram](#12-model-workflow-diagram)
 
 ---
 
@@ -316,7 +316,7 @@ flowchart TD
     K --> M[Trend & Anomaly Analysis]
     L --> M
 
-    M --> N[Dashboards & Atlases<br/>R Shiny • GEE]
+    M --> N[Dashboards & Atlases]
 ```
 
 ### Notes

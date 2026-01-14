@@ -610,9 +610,15 @@ server <- function(input, output, session) {
       df_hist <- read_fst(f_hist)
       df_fut  <- read_fst(f_fut)
       
+      # Keep non-numeric columns (like week) from future
       df <- df_fut
+      # Only difference the numeric columns (exclude week/date columns)
       num_cols <- names(df)[sapply(df, is.numeric)]
-      df[num_cols] <- df_fut[num_cols] - df_hist[num_cols]
+      for (col in num_cols) {
+        if (col %in% names(df_hist)) {
+          df[[col]] <- df_fut[[col]] - df_hist[[col]]
+        }
+      }
     }
     
     df %>%

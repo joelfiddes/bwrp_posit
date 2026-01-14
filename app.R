@@ -31,18 +31,15 @@ cf_var_dict <- tibble::tribble(
   "Tair_C",                  "Air Temperature",                     "°C",            "Temperature",         -10,    45,    "inferno",
   "Tsurf",                   "Surface Temperature",                 "°C",            "Temperature",         -10,    50,    "inferno",
   
-  "TP_mmhr",                 "Total Precipitation",                 "mm/day",        "Precipitation",       0,      5,     "viridis",
-  "Sf_mmhr",                 "Snowfall",                            "mm/day",        "Precipitation",       0,      2,     "viridis",
-  "Rf_mmhr",                 "Rainfall",                            "mm/day",        "Precipitation",       0,      5,     "viridis",
-  "Annual_TP_mm",            "Annual Precipitation",                "mm/year",       "Precipitation",       0,      2000,  "viridis",
+  "TP_mmhr",                 "Total Precipitation",                 "mm/hour",        "Precipitation",       0,      0.1,     "viridis",
+  "Sf_mmhr",                 "Snowfall",                            "mm/hour",        "Precipitation",       0,      0.01,     "viridis",
+  "Rf_mmhr",                 "Rainfall",                            "mm/hour",        "Precipitation",       0,      0.1,     "viridis",
+  "Annual_TP_mm",            "Annual Precipitation",                "mm/year",       "Precipitation",       0,      700,  "viridis",
   
   "LWin",                    "Incoming Longwave Radiation",         "W/m²",          "Radiation",           100,    400,   "viridis",
   "SWin",                    "Incoming Shortwave Radiation",        "W/m²",          "Radiation",           0,      350,   "viridis",
-  "LWout",                   "Outgoing Longwave Radiation",         "W/m²",          "Radiation",           200,    500,   "viridis",
-  "LWnet",                   "Net Longwave Radiation",              "W/m²",          "Radiation",           -150,   50,    "RdBu",
   "SWnet",                   "Net Shortwave Radiation",             "W/m²",          "Radiation",           -50,    250,   "viridis",
   "Rnet_Wm2",                "Net Radiation",                       "W/m²",          "Radiation",           -100,   300,   "viridis",
-  "Rnet_MJm2hr",             "Net Radiation",                       "MJ/m²/hr",      "Radiation",           0,      1.2,   "viridis",
   
   "RH",                      "Relative Humidity",                   "%",             "Humidity & Wind",     10,     100,   "viridis",
   "wind_ms",                 "Wind Speed",                          "m/s",           "Humidity & Wind",     0,      10,    "viridis",
@@ -50,9 +47,7 @@ cf_var_dict <- tibble::tribble(
   "PET_mm_hr_penman",        "Penman PET",                          "mm/day",        "Evaporation",         0,      0.5,   "viridis",
   "PET_mm_hr_priestly",      "Priestly-Taylor PET",                 "mm/day",        "Evaporation",         0,      0.5,   "viridis",
   "PET_mm_annual_penman",    "Annual PET (Penman)",                 "mm/year",       "Evaporation",         0,      3000,  "viridis",
-  "PET_mm_annual_priestly",  "Annual PET (Priestly-Taylor)",        "mm/year",       "Evaporation",         0,      3000,  "viridis",
-  
-  "delta",                   "Clausius-Clapeyron Slope",            "kPa/°C",        "Other",               0,      0.5,   "viridis"
+  "PET_mm_annual_priestly",  "Annual PET (Priestly-Taylor)",        "mm/year",       "Evaporation",         0,      3000,  "viridis"
 )
 
 cf_var_dict$group <- factor(cf_var_dict$group, levels = cf_group_order)
@@ -470,7 +465,7 @@ server <- function(input, output, session) {
         popup = ~paste0(vinfo$display_name, ": ", round(get(input$cf_selected_var), 2))
       ) %>%
       addLegend(
-        "bottomright", 
+        "topright", 
         pal = pal, 
         values = c(vinfo$vmin, vinfo$vmax),
         title = vinfo$display_name,

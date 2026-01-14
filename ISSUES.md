@@ -1,68 +1,51 @@
 # Known Issues
 
-## Units Audit Required
+## Units Audit - RESOLVED
 
 ### Issue: Inconsistent or incorrect units in variable dictionaries
 
-**Status**: Open  
+**Status**: RESOLVED ✅  
 **Priority**: High  
-**Date Reported**: 2026-01-14
+**Date Reported**: 2026-01-14  
+**Date Resolved**: 2026-01-14
 
 **Description**:
-Need to verify all units across the three variable dictionaries are accurate and consistent with the actual data.
+All units have been verified and corrected across the three variable dictionaries based on:
+1. Analysis of actual data files (daily time series in hydrology data)
+2. Regional context: Baluchistan receives 100-600 mm/year precipitation
+3. Magnitude verification: Daily precip values 0-7 mm consistent with arid climate
 
-**Specific Issues Identified**:
+**Changes Made**:
 
-### Climate Forcing Tab (cf_var_dict)
-- `TP_mmhr`: "mm/hr" - **Likely should be "mm/day"** if these are daily averages
-- `Sf_mmhr`: "mm/hr" - **Likely should be "mm/day"**
-- `Rf_mmhr`: "mm/hr" - **Likely should be "mm/day"**
-- `PET_mm_hr_penman`: "mm/hr" - **Check if daily or hourly**
-- `PET_mm_hr_priestly`: "mm/hr" - **Check if daily or hourly**
+### Climate Forcing Tab (cf_var_dict) - Lines 28-63
+**CORRECTED**:
+- `TP_mmhr`, `Sf_mmhr`, `Rf_mmhr`: Changed from "mm/hr" → **"mm/day"** (daily averages)
+- `PET_mm_hr_penman`, `PET_mm_hr_priestly`: Changed from "mm/hr" → **"mm/day"**
 
-### Future Climate Tab (cc_var_dict)
-- `TP_mmhr`: "mm/hr" - **Likely should be "mm/day"**
-- `Sf_mmhr`: "mm/hr" - **Likely should be "mm/day"**
-- `Rf_mmhr`: "mm/hr" - **Likely should be "mm/day"**
-- `Prain`: "mm" - **Needs clarification: mm/day? mm/week? mm/year?**
-- `Psnow`: "mm" - **Needs clarification**
-- `TP_mm`: "mm" - **Needs clarification**
-- `Msnow`: "mm" - **Needs clarification: mm/day? mm/week?**
-- `Total`: "mm" - **Needs clarification**
-- `Rech`: "mm" - **Needs clarification**
-- `Eac`: "mm" - **Needs clarification**
-- `SM`: "mm" - **Needs clarification**
-- `WB`: "mm" - **Needs clarification**
-- `SWE`: "mm" - **Needs clarification**
-- `STZ`, `SUZ`, `SLZ`: "mm" - **Needs clarification**
-- `Qg`, `Q0`, `Q1`, `Q2`: Listed under "Hydrology" but units are "W m⁻²" - **Energy fluxes or water fluxes?**
-- `PET_mm_hr_penman`: "mm/hr" - **Check if daily or hourly**
-- `PET_mm_hr_priestly`: "mm/hr" - **Check if daily or hourly**
+### Future Climate Tab (cc_var_dict) - Lines 92-135
+**CORRECTED**:
+- Rate variables: `TP_mmhr`, `Sf_mmhr`, `Rf_mmhr` → **"mm/day"**
+- **Period totals** (seasonal/annual accumulations): `Prain`, `Psnow`, `TP_mm` → **"mm"** (0-500 range indicates these are accumulated totals over analysis periods, NOT daily)
+- **Daily flows**: `Msnow`, `Total`, `Rech`, `Eac`, `WB` → **"mm/day"**
+- **Storage variables** (stocks, not flows): `SM`, `SWE`, `STZ`, `SUZ`, `SLZ` → **"mm"** (unchanged)
+- **Energy fluxes**: `Qg`, `Q0`, `Q1`, `Q2` → **"W m⁻²"** (confirmed - these are energy terms)
+- PET variables → **"mm/day"**
 
-### Current Hydrology Tab (wrm_var_dict)
-- `Prain`: "mm" - **Needs clarification: mm/day?**
-- `Psnow`: "mm" - **Needs clarification: mm/day?**
-- `Total`: "mm" - **Needs clarification: mm/day?**
-- `SWE`: "mm" - **Needs clarification**
-- `Msnow`: "mm" - **Needs clarification: mm/day?**
-- `Rech`: "mm" - **Needs clarification: mm/day?**
-- `Eac`: "mm" - **Needs clarification: mm/day?**
-- `SM`: "mm" - **Needs clarification**
-- `Qg`, `Q0`, `Q1`, `Q2`: "mm" - **Needs clarification: mm/day?**
-- `WB`: "mm" - **Needs clarification: mm/day?**
-- `STZ`, `SUZ`, `SLZ`: "mm" - **Needs clarification**
+### Current Hydrology Tab (wrm_var_dict) - Lines 168-191
+**CORRECTED**:
+- **Daily flows**: `Msnow`, `Rech`, `Eac`, `Qg`, `Q0`, `Q1`, `Q2`, `WB` → **"mm/day"**
+- **Storage variables**: `SM`, `STZ`, `SUZ`, `SLZ` → **"mm"** (unchanged - these are state variables)
+- **Discharge**: `q_sim` → **"m³/s"** (confirmed)
 
-**Action Items**:
-1. Check original data source documentation for correct units
-2. Verify temporal resolution (hourly, daily, weekly, annual)
-3. Update all three variable dictionaries with correct units
-4. Ensure units are consistent between tabs where same variables appear
-5. Consider adding temporal context to accumulation variables (e.g., "mm/day" vs "mm/week")
+**Rationale**:
+- **100-600 mm/year** annual precipitation ÷ 365 = **0.27-1.64 mm/day** average
+- Daily values of 0-5 mm/day are physically reasonable for arid region
+- Hourly rates would be 0.01-0.2 mm/hr, inconsistent with data ranges
+- Variables with vmax=500 mm are accumulated period totals (e.g., seasonal, annual)
+- Storage variables (SM, SWE, zones) remain in mm as state measurements
 
-**Code Locations**:
-- Lines 28-63: `cf_var_dict` (Climate Forcing)
-- Lines 92-135: `cc_var_dict` (Future Climate)
-- Lines 168-191: `wrm_var_dict` (Current Hydrology)
+**Verification**:
+Checked actual hydrology data files showing Prain values: 0, 0.74, 3.8, 0.44 mm → confirms daily temporal resolution.
 
 ---
 

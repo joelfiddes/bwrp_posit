@@ -4,6 +4,33 @@ This is a unified dashboard combining all three BWRP Shiny applications into a s
 
 **Live Application**: https://joelfiddes-bwrp.share.connect.posit.cloud/
 
+## Table of Contents
+
+### BWRP Dashboard
+- [Overview](#overview)
+- [Features](#features)
+- [Running Locally](#running-locally)
+- [Dependencies](#dependencies)
+- [Data Structure](#data-structure)
+- [Deployment](#deployment)
+- [Navigation](#navigation)
+- [License](#license)
+
+### Hydrological Modelling Workflow
+- [1. Climate Data Inputs](#1-climate-data-inputs)
+- [2. Terrain Representation (TopoSUB)](#2-terrain-representation-toposub)
+- [3. Climate Downscaling](#3-climate-downscaling)
+- [4. Snow and Surface Energy Modelling (FSM)](#4-snow-and-surface-energy-modelling-fsm)
+- [5. Potential Evapotranspiration (PET)](#5-potential-evapotranspiration-pet)
+- [6. Catchment-Level Aggregation](#6-catchment-level-aggregation)
+- [7. Hydrological Modelling (HBV)](#7-hydrological-modelling-hbv)
+- [8. Historical and Future Simulations](#8-historical-and-future-simulations)
+- [9. Climate and Hydrological Analysis](#9-climate-and-hydrological-analysis)
+- [10. Visualisation and Access](#10-visualisation-and-access)
+- [Model Workflow (Summary Box)](#model-workflow-summary-box)
+
+---
+
 ## Overview
 
 The BWRP Combined Dashboard integrates:

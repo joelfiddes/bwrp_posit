@@ -10,18 +10,27 @@ library(zoo)
 library(tidyr)
 library(fst)
 library(tibble)
+library(htmltools)
 
 # =======================
 # CLIMATE FORCING DATA
 # =======================
 
-# Load climate forcing data
-cf_data_path <- "./data/current_climate/catchments_with_forcing.csv"
-cf_catchments <- read.csv(cf_data_path)
+# Load climate forcing data - Catchments
+cf_catchment_path <- "./data/current_climate/catchments_with_forcing.csv"
+cf_catchments <- read.csv(cf_catchment_path)
 cf_catchments$Annual_TP_mm <- cf_catchments$TP_mmhr * 24 * 365
 cf_catchments$PET_mm_annual_priestly <- cf_catchments$PET_mm_hr_priestly * 8760
 cf_catchments$PET_mm_annual_penman   <- cf_catchments$PET_mm_hr_penman   * 8760
 cf_catchments <- st_as_sf(cf_catchments, wkt = "geometry", crs = 4326)
+
+# Load climate forcing data - Basins
+cf_basin_path <- "./data/current_climate/basins_with_forcing.csv"
+cf_basins <- read.csv(cf_basin_path)
+cf_basins$Annual_TP_mm <- cf_basins$TP_mmhr * 24 * 365
+cf_basins$PET_mm_annual_priestly <- cf_basins$PET_mm_hr_priestly * 8760
+cf_basins$PET_mm_annual_penman   <- cf_basins$PET_mm_hr_penman   * 8760
+cf_basins <- st_as_sf(cf_basins, wkt = "geometry", crs = 4326)
 
 # Climate Forcing Variable Dictionary
 cf_group_order <- c("Temperature", "Precipitation", "Radiation", "Humidity & Wind", "Evaporation", "Other")
@@ -44,10 +53,10 @@ cf_var_dict <- tibble::tribble(
   "RH",                      "Relative Humidity",                   "%",             "Humidity & Wind",     10,     100,   "viridis",
   "wind_ms",                 "Wind Speed",                          "m/s",           "Humidity & Wind",     0,      10,    "viridis",
   
-  "PET_mm_hr_penman",        "Penman PET",                          "mm/day",        "Evaporation",         0,      0.25,   "viridis",
-  "PET_mm_hr_priestly",      "Priestly-Taylor PET",                 "mm/day",        "Evaporation",         0,      0.25,   "viridis",
-  "PET_mm_annual_penman",    "Annual PET (Penman)",                 "mm/year",       "Evaporation",         1000,      2300,  "viridis",
-  "PET_mm_annual_priestly",  "Annual PET (Priestly-Taylor)",        "mm/year",       "Evaporation",         1000,      2000,  "viridis"
+  "PET_mm_hr_penman",        "Penman PET",                          "mm/day",        "Evaporation",         0.15,      0.3,   "viridis",
+  "PET_mm_hr_priestly",      "Priestly-Taylor PET",                 "mm/day",        "Evaporation",         0.15,      0.25,   "viridis",
+  "PET_mm_annual_penman",    "Annual PET (Penman)",                 "mm/year",       "Evaporation",         1000,      2700,  "viridis",
+  "PET_mm_annual_priestly",  "Annual PET (Priestly-Taylor)",        "mm/year",       "Evaporation",         1000,      2200,  "viridis"
 )
 
 cf_var_dict$group <- factor(cf_var_dict$group, levels = cf_group_order)
@@ -59,6 +68,7 @@ cf_var_dict <- cf_var_dict %>%
 # CLIMATE CHANGE DATA
 # =======================
 
+# Catchment paths
 cc_base_shp <- "./data/future_climate/modelcatchments.shp"
 
 cc_scenario_dirs <- list(
@@ -67,9 +77,6 @@ cc_scenario_dirs <- list(
   "SSP5-8.5" = "./data/future_climate/data_ssp585"
 )
 
-cc_hist_dir <- "./data/future_climate/data_hist"
-cc_by_period_subdir <- "by_period"
-
 cc_ts_scenario_dirs <- list(
   "SSP1-2.6" = "./data/future_climate/data_fst_weekly/ssp126",
   "SSP2-4.5" = "./data/future_climate/data_fst_weekly/ssp245",
@@ -77,6 +84,25 @@ cc_ts_scenario_dirs <- list(
 )
 
 cc_ts_hist_dir <- "./data/future_climate/data_fst_weekly/hist"
+
+# Basin paths
+cc_basin_shp <- "./data/future_climate/modelbasins.shp"
+
+cc_basin_scenario_dirs <- list(
+  "SSP1-2.6" = "./data/future_climate/data_ssp126_basins",
+  "SSP2-4.5" = "./data/future_climate/data_ssp245_basins",
+  "SSP5-8.5" = "./data/future_climate/data_ssp585_basins"
+)
+
+cc_ts_basin_scenario_dirs <- list(
+  "SSP1-2.6" = "./data/future_climate/data_fst_weekly_basins/ssp126",
+  "SSP2-4.5" = "./data/future_climate/data_fst_weekly_basins/ssp245",
+  "SSP5-8.5" = "./data/future_climate/data_fst_weekly_basins/ssp585"
+)
+
+cc_ts_basin_hist_dir <- "./data/future_climate/data_fst_weekly_basins/hist"
+
+cc_by_period_subdir <- "by_period"
 
 # Variable dictionary
 group_order <- c("Temperature", "Precipitation", "Radiation", "Hydrology", 
@@ -118,12 +144,20 @@ cc_var_dict <- cc_var_dict[order(cc_var_dict$group, cc_var_dict$var), ]
 cc_base_catchments <- st_read(cc_base_shp, quiet = TRUE) %>%
   mutate(row_id = row_number())
 
-cc_base_fields <- names(st_drop_geometry(cc_base_catchments))
+cc_base_basins <- st_read(cc_basin_shp, quiet = TRUE) %>%
+  mutate(row_id = row_number())
 
-cc_get_shp_path <- function(scenario, mode, period, season) {
-  base_dir <- cc_scenario_dirs[[scenario]]
+cc_base_fields <- names(st_drop_geometry(cc_base_catchments))
+cc_basin_fields <- names(st_drop_geometry(cc_base_basins))
+
+cc_get_shp_path <- function(scenario, mode, period, season, spatial_unit = "catchment") {
+  if (spatial_unit == "basin") {
+    base_dir <- cc_basin_scenario_dirs[[scenario]]
+  } else {
+    base_dir <- cc_scenario_dirs[[scenario]]
+  }
   bp <- file.path(base_dir, cc_by_period_subdir)
-  
+
   if (mode == "absolute") {
     file.path(bp, paste0(period, "_", season, "_shp.shp"))
   } else {
@@ -135,10 +169,17 @@ cc_get_shp_path <- function(scenario, mode, period, season) {
 # WATER RESOURCES DATA
 # =======================
 
+# Catchment data
 wrm_catchments <- st_read("./data/hydrology/inputs/modelcatchments.shp", quiet = TRUE) %>%
   mutate(index = row_number() - 1)
 
 wrm_anomaly_df <- read_csv("./data/hydrology/inputs/anomaly_df.csv", show_col_types = FALSE)
+
+# Basin data
+wrm_basins <- st_read("./data/hydrology/basins/inputs/modelbasins.shp", quiet = TRUE) %>%
+  mutate(index = row_number() - 1)
+
+wrm_basin_anomaly_df <- read_csv("./data/hydrology/basins/inputs/anomaly_df.csv", show_col_types = FALSE)
 
 # Water Resources Variable Dictionary
 wrm_group_order <- c("Precipitation", "Snow", "Hydrology", "Soil Zones", "Discharge")
@@ -175,6 +216,9 @@ wrm_variable_names <- setNames(wrm_var_dict$display_name, wrm_var_dict$var)
 wrm_anomaly_df <- wrm_anomaly_df %>%
   mutate(variable = recode(variable, !!!wrm_variable_names))
 
+wrm_basin_anomaly_df <- wrm_basin_anomaly_df %>%
+  mutate(variable = recode(variable, !!!wrm_variable_names))
+
 # =======================
 # UI
 # =======================
@@ -205,7 +249,12 @@ ui <- navbarPage(
               )
             )
           ),
-          
+
+          radioButtons("cf_spatial_unit", "Spatial Unit:",
+                       choices = c("Catchments (214)" = "catchment",
+                                   "Basins (18)" = "basin"),
+                       inline = TRUE),
+
           selectInput("cf_selected_var", "Select Variable:",
                       choices = character(0)),
           
@@ -252,7 +301,12 @@ ui <- navbarPage(
               )
             )
           ),
-          
+
+          radioButtons("wrm_spatial_unit", "Spatial Unit:",
+                       choices = c("Catchments (214)" = "catchment",
+                                   "Basins (18)" = "basin"),
+                       inline = TRUE),
+
           selectInput("wrm_year", "Select Year:", choices = NULL),
           selectInput("wrm_variable", "Select Variable:", choices = NULL),
           radioButtons("wrm_map_view", "Map View:", 
@@ -281,7 +335,7 @@ ui <- navbarPage(
           
           downloadButton("wrm_download_ts", "Download time series CSV"),
           
-          helpText("Click a catchment to view its daily time series below.")
+          helpText("Click a catchment or basin to view its daily time series below.")
         ),
         mainPanel(
           leafletOutput("wrm_map", height = "600px"),
@@ -318,7 +372,12 @@ ui <- navbarPage(
               )
             )
           ),
-          
+
+          radioButtons("cc_spatial_unit", "Spatial Unit:",
+                       choices = c("Catchments (214)" = "catchment",
+                                   "Basins (18)" = "basin"),
+                       inline = TRUE),
+
           radioButtons(
             "cc_mode", "Display mode:",
             choices = c(
@@ -435,32 +494,49 @@ server <- function(input, output, session) {
     )
   })
   
+  # Reactive: Get current climate spatial data
+  cf_current_spatial <- reactive({
+    if (input$cf_spatial_unit == "basin") cf_basins else cf_catchments
+  })
+
   # Render map
   output$cf_map <- renderLeaflet({
-    req(input$cf_selected_var)
-    
+    req(input$cf_selected_var, input$cf_spatial_unit)
+
+    data <- cf_current_spatial()
+
     # Get variable info from dictionary
     vinfo <- cf_var_dict %>% filter(var == input$cf_selected_var)
-    
+
     # Create color palette
     pal <- colorNumeric(
       palette = vinfo$palette,
       domain = c(vinfo$vmin, vinfo$vmax),
       na.color = "transparent"
     )
-    
-    leaflet(cf_catchments) %>%
+
+    # Create labels based on spatial unit
+    if (input$cf_spatial_unit == "basin") {
+      labels <- paste0("Basin: ", data$Basin, "<br>",
+                       vinfo$display_name, ": ", round(data[[input$cf_selected_var]], 2))
+    } else {
+      labels <- paste0("Catchment: ", seq_len(nrow(data)), "<br>",
+                       vinfo$display_name, ": ", round(data[[input$cf_selected_var]], 2))
+    }
+
+    leaflet(data) %>%
       addProviderTiles(input$cf_basemap) %>%
       addPolygons(
         fillColor = ~pal(get(input$cf_selected_var)),
         fillOpacity = input$cf_alpha,
         color = "#444444",
         weight = 0.5,
-        popup = ~paste0(vinfo$display_name, ": ", round(get(input$cf_selected_var), 2))
+        label = lapply(labels, htmltools::HTML),
+        highlightOptions = highlightOptions(weight = 2, color = "#666", fillOpacity = 0.9, bringToFront = TRUE)
       ) %>%
       addLegend(
-        "topright", 
-        pal = pal, 
+        "topright",
+        pal = pal,
         values = c(vinfo$vmin, vinfo$vmax),
         title = vinfo$display_name,
         opacity = 0.9
@@ -505,18 +581,19 @@ server <- function(input, output, session) {
   
   # Load map data
   cc_gdf <- reactive({
-    shp <- cc_get_shp_path(input$cc_scenario, input$cc_mode, input$cc_period, input$cc_season)
+    shp <- cc_get_shp_path(input$cc_scenario, input$cc_mode, input$cc_period, input$cc_season, input$cc_spatial_unit)
     req(file.exists(shp))
-    
+
     st_read(shp, quiet = TRUE) %>%
       mutate(row_id = row_number())
   })
-  
+
   # Variable selector
   observeEvent(cc_gdf(), {
     df <- cc_gdf() %>% st_drop_geometry()
     numeric_vars <- names(df)[sapply(df, is.numeric)]
-    physical_vars <- setdiff(numeric_vars, cc_base_fields)
+    base_fields <- if (input$cc_spatial_unit == "basin") cc_basin_fields else cc_base_fields
+    physical_vars <- setdiff(numeric_vars, base_fields)
     
     dict_sub <- cc_var_dict %>%
       filter(var %in% physical_vars)
@@ -561,6 +638,15 @@ server <- function(input, output, session) {
         domain = c(vinfo$vmin, vinfo$vmax))
     }
     
+    # Create labels based on spatial unit
+    if (input$cc_spatial_unit == "basin") {
+      labels <- paste0("Basin: ", data$Basin, "<br>",
+                       input$cc_variable, ": ", round(vals, 3))
+    } else {
+      labels <- paste0("Catchment: ", data$row_id, "<br>",
+                       input$cc_variable, ": ", round(vals, 3))
+    }
+
     leaflet(data) %>%
       addProviderTiles(input$cc_basemap) %>%
       addPolygons(
@@ -569,7 +655,8 @@ server <- function(input, output, session) {
         color = "black",
         weight = 0.4,
         layerId = ~row_id,
-        highlightOptions = highlightOptions(weight = 0)
+        label = lapply(labels, htmltools::HTML),
+        highlightOptions = highlightOptions(weight = 2, color = "#666", fillOpacity = 0.9, bringToFront = TRUE)
       ) %>%
       addLegend(
         pal = pal,
@@ -590,22 +677,31 @@ server <- function(input, output, session) {
   cc_ts_data <- reactive({
     idx <- cc_clicked_index()
     req(idx, input$cc_variable)
-    
-    scen_dir <- cc_ts_scenario_dirs[[input$cc_scenario]]
-    
+
+    # Select appropriate directories based on spatial unit
+    if (input$cc_spatial_unit == "basin") {
+      scen_dir <- cc_ts_basin_scenario_dirs[[input$cc_scenario]]
+      hist_dir <- cc_ts_basin_hist_dir
+      file_prefix <- "basin_"
+    } else {
+      scen_dir <- cc_ts_scenario_dirs[[input$cc_scenario]]
+      hist_dir <- cc_ts_hist_dir
+      file_prefix <- "catchment_"
+    }
+
     if (input$cc_mode == "absolute") {
-      f <- file.path(scen_dir, paste0("catchment_", idx, "_daily_weekly.fst"))
+      f <- file.path(scen_dir, paste0(file_prefix, idx, "_daily_weekly.fst"))
       req(file.exists(f))
       df <- read_fst(f)
     } else {
-      f_hist <- file.path(cc_ts_hist_dir, paste0("catchment_", idx, "_daily_weekly.fst"))
-      f_fut  <- file.path(scen_dir, paste0("catchment_", idx, "_daily_weekly.fst"))
-      
+      f_hist <- file.path(hist_dir, paste0(file_prefix, idx, "_daily_weekly.fst"))
+      f_fut  <- file.path(scen_dir, paste0(file_prefix, idx, "_daily_weekly.fst"))
+
       req(file.exists(f_hist), file.exists(f_fut))
-      
+
       df_hist <- read_fst(f_hist)
       df_fut  <- read_fst(f_fut)
-      
+
       # Keep non-numeric columns (like week) from future
       df <- df_fut
       # Only difference the numeric columns (exclude week/date columns)
@@ -616,7 +712,12 @@ server <- function(input, output, session) {
         }
       }
     }
-    
+
+    # Check if variable exists
+    if (!(input$cc_variable %in% names(df))) {
+      return(data.frame(date = as.Date(character()), value = numeric()))
+    }
+
     df %>%
       mutate(date = as.Date(week)) %>%
       select(date, all_of(input$cc_variable))
@@ -626,27 +727,33 @@ server <- function(input, output, session) {
   output$cc_timeseries_plot <- renderPlot({
     df <- cc_ts_data()
     req(nrow(df) > 20)
-    
+
     y <- df[[input$cc_variable]]
     x <- as.numeric(df$date)
-    
+
     fit <- lm(y ~ x)
     slope_yr <- coef(fit)[2] * 365.25
-    
+
+    # Create title based on spatial unit
+    idx <- cc_clicked_index()
+    if (input$cc_spatial_unit == "basin") {
+      basin_name <- cc_base_basins$Basin[cc_base_basins$row_id == idx]
+      title_text <- paste0("Basin: ", basin_name, " | Trend: ",
+                           formatC(slope_yr, digits = 3), " per year")
+    } else {
+      title_text <- paste0("Catchment ", idx, " | Trend: ",
+                           formatC(slope_yr, digits = 3), " per year")
+    }
+
     plot(
       df$date, y,
       type = "l",
       col = "grey40",
       xlab = "Date",
       ylab = input$cc_variable,
-      main = paste(
-        "Catchment", cc_clicked_index(),
-        "| Trend:",
-        formatC(slope_yr, digits = 3),
-        "per year"
-      )
+      main = title_text
     )
-    
+
     if (input$cc_show_rm) {
       rm <- rollmean(y, k = input$cc_rm_window,
                      fill = NA, align = "right")
@@ -657,8 +764,9 @@ server <- function(input, output, session) {
   # Download handler
   output$cc_download_ts <- downloadHandler(
     filename = function() {
+      unit_type <- if (input$cc_spatial_unit == "basin") "basin" else "catchment"
       paste0(
-        "catchment_", cc_clicked_index(), "_",
+        unit_type, "_", cc_clicked_index(), "_",
         input$cc_scenario, "_",
         input$cc_mode, "_",
         input$cc_variable, ".csv"
@@ -706,32 +814,44 @@ server <- function(input, output, session) {
   
   # Update dropdowns
   observe({
-    updateSelectInput(session, "wrm_year", choices = sort(unique(wrm_anomaly_df$year)))
-    
+    # Get the correct anomaly df based on spatial unit
+    anomaly_data <- if (input$wrm_spatial_unit == "basin") wrm_basin_anomaly_df else wrm_anomaly_df
+    updateSelectInput(session, "wrm_year", choices = sort(unique(anomaly_data$year)))
+
     # Create grouped variable choices
     grouped_choices <- split(
       setNames(wrm_var_dict$display_name, wrm_var_dict$display_name),
       wrm_var_dict$group
     )
-    
+
     updateSelectInput(
-      session, 
-      "wrm_variable", 
+      session,
+      "wrm_variable",
       choices = grouped_choices,
       selected = wrm_var_dict$display_name[1]
     )
   })
-  
+
+  # Reactive: Get current spatial data
+  wrm_current_spatial <- reactive({
+    if (input$wrm_spatial_unit == "basin") wrm_basins else wrm_catchments
+  })
+
+  # Reactive: Get current anomaly data
+  wrm_current_anomaly <- reactive({
+    if (input$wrm_spatial_unit == "basin") wrm_basin_anomaly_df else wrm_anomaly_df
+  })
+
   # Reactive: Filtered anomaly data
   wrm_filtered_data <- reactive({
     req(input$wrm_year, input$wrm_variable)
-    wrm_anomaly_df %>%
+    wrm_current_anomaly() %>%
       filter(year == input$wrm_year, variable == input$wrm_variable)
   })
-  
+
   # Join with spatial data
   wrm_joined_sf <- reactive({
-    left_join(wrm_catchments, wrm_filtered_data(), by = "index")
+    left_join(wrm_current_spatial(), wrm_filtered_data(), by = "index")
   })
   
   # Store clicked index
@@ -758,6 +878,15 @@ server <- function(input, output, session) {
       pal <- colorNumeric(palette = rev("viridis"), domain = color_range, na.color = "transparent")
     }
     
+    # Create labels based on spatial unit
+    if (input$wrm_spatial_unit == "basin") {
+      labels <- paste0("Basin: ", data$Basin, " (", data$index, ")<br>",
+                       column_to_plot, ": ", round(values, 3))
+    } else {
+      labels <- paste0("Catchment: ", data$index, "<br>",
+                       column_to_plot, ": ", round(values, 3))
+    }
+
     leaflet(data) %>%
       addProviderTiles(input$wrm_basemap) %>%
       addPolygons(
@@ -766,7 +895,7 @@ server <- function(input, output, session) {
         color = "black",
         weight = 0.5,
         layerId = ~index,
-        label = ~paste0("Index: ", index, "<br>", column_to_plot, ": ", round(values, 3)),
+        label = lapply(labels, htmltools::HTML),
         highlightOptions = highlightOptions(weight = 2, color = "#666", fillOpacity = 0.9, bringToFront = TRUE)
       ) %>%
       addLegend(
@@ -793,14 +922,21 @@ server <- function(input, output, session) {
       title(main = paste("Unknown variable:", var))
       return()
     }
-    
-    file_path <- paste0("./data/hydrology/results/result_", idx, ".csv")
+
+    # Select correct results directory based on spatial unit
+    results_dir <- if (input$wrm_spatial_unit == "basin") {
+      "./data/hydrology/basins/results"
+    } else {
+      "./data/hydrology/results"
+    }
+
+    file_path <- paste0(results_dir, "/result_", idx, ".csv")
     if (!file.exists(file_path)) {
       plot.new()
       title(main = paste("File not found:", file_path))
       return()
     }
-    
+
     ts_data <- read_csv(file_path, show_col_types = FALSE)
     
     if (!("Date" %in% names(ts_data))) {
@@ -825,6 +961,16 @@ server <- function(input, output, session) {
     fit <- lm(y ~ x)
     slope_yr <- coef(fit)[2] * 365.25
     
+    # Create title based on spatial unit
+    if (input$wrm_spatial_unit == "basin") {
+      basin_name <- wrm_basins$Basin[wrm_basins$index == idx]
+      title_text <- paste0("Basin: ", basin_name, " (", idx, ") | Trend: ",
+                           formatC(slope_yr, digits = 3), " per year")
+    } else {
+      title_text <- paste0("Catchment ", idx, " | Trend: ",
+                           formatC(slope_yr, digits = 3), " per year")
+    }
+
     # Base plot
     plot(
       ts_data$date, y,
@@ -832,12 +978,7 @@ server <- function(input, output, session) {
       col = "grey40",
       xlab = "Date",
       ylab = var,
-      main = paste(
-        "Catchment", idx,
-        "| Trend:",
-        formatC(slope_yr, digits = 3),
-        "per year"
-      )
+      main = title_text
     )
     
     # Add running mean if enabled
@@ -853,21 +994,29 @@ server <- function(input, output, session) {
     filename = function() {
       idx <- wrm_clicked_index()
       var <- input$wrm_variable
+      unit_type <- if (input$wrm_spatial_unit == "basin") "basin" else "catchment"
       paste0(
-        "catchment_", idx, "_",
+        unit_type, "_", idx, "_",
         input$wrm_year, "_",
         gsub(" ", "_", var), ".csv"
       )
     },
     content = function(file) {
       req(wrm_clicked_index(), input$wrm_variable)
-      
+
       idx <- wrm_clicked_index()
       var <- input$wrm_variable
       display_to_original <- setNames(names(wrm_variable_names), wrm_variable_names)
       var_original <- display_to_original[[var]]
-      
-      file_path <- paste0("./data/hydrology/results/result_", idx, ".csv")
+
+      # Select correct results directory
+      results_dir <- if (input$wrm_spatial_unit == "basin") {
+        "./data/hydrology/basins/results"
+      } else {
+        "./data/hydrology/results"
+      }
+
+      file_path <- paste0(results_dir, "/result_", idx, ".csv")
       if (file.exists(file_path)) {
         ts_data <- read_csv(file_path, show_col_types = FALSE) %>%
           mutate(date = as.Date(Date))

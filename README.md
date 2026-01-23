@@ -28,7 +28,7 @@ This is a unified dashboard combining all three BWRP Shiny applications into a s
 - [9. Climate and Hydrological Analysis](#9-climate-and-hydrological-analysis)
 - [10. Visualisation and Access](#10-visualisation-and-access)
 - [11. Key Design Principles](#11-key-design-principles)
-- [12 .Model Workflow Diagram](#12-model-workflow-diagram)
+- [12. Model Workflow Diagram](#12-model-workflow-diagram)
 
 ---
 
